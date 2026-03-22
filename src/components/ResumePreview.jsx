@@ -406,8 +406,10 @@ function ExpItem({ exp, expStyle, editable, updItem, removeItem, onBulletsChange
       <div className="rv-exp-header">
         <div className="rv-exp-title">
           <EditableField value={exp.title}   onChange={v => updItem("experience", exp.id, "title",   v)} placeholder="Job Title" style={{ fontWeight: 700 }} />
-          <span style={{ fontWeight: 400 }}> – </span>
-          <EditableField value={exp.company} onChange={v => updItem("experience", exp.id, "company", v)} placeholder="Company" />
+          <span className={`rv-exp-company-wrap${!exp.company ? " rv-exp-company-empty" : ""}`}>
+            <span style={{ fontWeight: 400 }}> – </span>
+            <EditableField value={exp.company} onChange={v => updItem("experience", exp.id, "company", v)} placeholder="Company" />
+          </span>
         </div>
         <div className="rv-exp-meta" style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <EditableField value={exp.startDate} onChange={v => updItem("experience", exp.id, "startDate", v)} placeholder="Start" />
@@ -451,10 +453,10 @@ function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBullets
       <div className="rv-exp-header">
         <div className="rv-exp-title">
           <EditableField value={proj.title} onChange={v => updItem("projects", proj.id, "title", v)} placeholder="Project Name" style={{ fontWeight: 700 }} />
-          {(proj.url || editable) && (
-            <><span style={{ fontWeight: 400 }}> | </span>
-            <EditableField value={proj.url} onChange={v => updItem("projects", proj.id, "url", v)} placeholder="Project URL" className="rv-proj-url" /></>
-          )}
+          <span className={`rv-proj-url-wrap${!proj.url ? " rv-proj-url-empty" : ""}`}>
+            <span style={{ fontWeight: 400 }}> | </span>
+            <EditableField value={proj.url} onChange={v => updItem("projects", proj.id, "url", v)} placeholder="Project URL" className="rv-proj-url" />
+          </span>
         </div>
         <div className="rv-exp-meta" style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <EditableField value={proj.startDate} onChange={v => updItem("projects", proj.id, "startDate", v)} placeholder="Start" />

@@ -853,6 +853,15 @@ body {
   .rv-item-toolbar,
   .rv-bullet-x { display: none !important; }
 
+  /* Hide contact items whose editable field is empty (e.g. blank linkedin/github) */
+  .rv-contact-item:has(.rv-editable-empty) { display: none !important; }
+
+  /* Hide dash + company when company is empty */
+  .rv-exp-company-empty { display: none !important; }
+
+  /* Hide separator + url when project url is empty */
+  .rv-proj-url-empty { display: none !important; }
+
   /* Strip dashed borders and backgrounds added for editing UX */
   .rv-section-wrap {
     border: none !important;
