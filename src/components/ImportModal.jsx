@@ -8,7 +8,6 @@ export default function ImportModal({ onImport, onClose }) {
   const [statusMsg, setStatusMsg] = useState("");
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
-  const envApiKey = (import.meta.env.VITE_GEMINI_API_KEY || "").trim();
 
   const process = useCallback(async (file) => {
     if (!file || file.type !== "application/pdf") {
@@ -22,13 +21,14 @@ export default function ImportModal({ onImport, onClose }) {
     try {
       setStatusMsg("Extracting text from PDF…");
       const lines = await extractTextFromPdf(file);
+      const rawText = lines.join("\n");
 
       let parsed;
-      if (envApiKey) {
+      try {
         setStatusMsg("Sending to Gemini AI…");
-        const rawText = lines.join("\n");
-        parsed = await parseWithGemini(rawText, envApiKey);
-      } else {
+        parsed = await parseWithGemini(rawText);
+      } catch (aiErr) {
+        console.warn("AI parse failed, falling back to heuristics:", aiErr.message);
         setStatusMsg("Parsing with heuristics…");
         parsed = parseResumeText(lines);
       }
@@ -41,7 +41,7 @@ export default function ImportModal({ onImport, onClose }) {
       setError(e.message || "Failed to parse PDF.");
       setStatus("error");
     }
-  }, [envApiKey, onImport, onClose]);
+  }, [onImport, onClose]);
 
   const onFile = (e) => { if (e.target.files[0]) process(e.target.files[0]); };
   const onDrop = (e) => { e.preventDefault(); setDragging(false); process(e.dataTransfer.files[0]); };
@@ -90,9 +90,7 @@ export default function ImportModal({ onImport, onClose }) {
         </label>
 
         <p className="import-footer">
-          {envApiKey
-            ? "🤖 AI mode — Gemini extracts the resume with high accuracy"
-            : "🔧 Basic mode — heuristic parser (results may vary)"}
+          🤖 AI mode — Gemini extracts the resume with high accuracy
         </p>
       </div>
     </div>
