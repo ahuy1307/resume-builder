@@ -49,7 +49,7 @@ function FontSelect({ label, value, onChange, options }) {
       <label>{label}</label>
       <select className="font-select" value={value} onChange={(e) => onChange(e.target.value)}>
         {options.map((f) => (
-          <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+          <option key={f} value={f} style={{ fontFamily: `"${f}"` }}>{f}</option>
         ))}
       </select>
     </div>

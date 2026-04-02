@@ -22,23 +22,27 @@ export const defaultFormatting = {
 };
 
 export const HEADING_FONTS = [
+  "Inter",
+  "Outfit",
+  "Montserrat",
+  "Playfair Display",
+  "Merriweather",
+  "Lora",
   "Times New Roman",
-  "Georgia",
-  "Garamond",
-  "Palatino Linotype",
   "Arial",
-  "Helvetica",
-  "Trebuchet MS",
+  "Georgia",
 ];
 
 export const BODY_FONTS = [
-  "Georgia",
+  "Inter",
+  "Roboto",
+  "Open Sans",
+  "Lato",
+  "Lora",
+  "Merriweather",
   "Times New Roman",
-  "Garamond",
-  "Palatino Linotype",
   "Arial",
-  "Verdana",
-  "Calibri",
+  "Georgia",
 ];
 
 export const PAGE_FORMATS = ["A4", "Letter (US)", "Legal"];
