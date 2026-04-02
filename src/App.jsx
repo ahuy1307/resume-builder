@@ -41,6 +41,30 @@ export default function App() {
   useEffect(() => { localStorage.setItem("rb-order",   JSON.stringify(sectionOrder)); }, [sectionOrder]);
   useEffect(() => { localStorage.setItem("rb-hidden",  JSON.stringify([...hiddenSections])); }, [hiddenSections]);
 
+  const handleAddCustomSection = () => {
+    const key = `custom_${Date.now()}`;
+    setResume(prev => ({
+      ...prev,
+      [key]: [{ id: `${key}-1`, label: "", value: "" }],
+      sectionTitles: { ...prev.sectionTitles, [key]: "Custom Section" }
+    }));
+    setSectionOrder(prev => [...prev, key]);
+  };
+
+  const handleRemoveCustomSection = (key) => {
+    if (!window.confirm("Are you sure you want to delete this custom section permanently?")) return;
+    setSectionOrder(prev => prev.filter(k => k !== key));
+    setHiddenSections(prev => { const n = new Set(prev); n.delete(key); return n; });
+    setResume(prev => {
+      const next = { ...prev };
+      delete next[key];
+      if (next.sectionTitles) {
+        delete next.sectionTitles[key];
+      }
+      return next;
+    });
+  };
+
   const handleDownloadPDF = () => { window.print(); };
   const handleClearAllData = () => {
     setResume(defaultResume);
@@ -112,7 +136,7 @@ export default function App() {
             </button>
           </div>
           <div className="editor-scroll">
-            {tab === "layout"  && <SectionOrderPanel order={sectionOrder} onChange={setSectionOrder} hidden={hiddenSections} onHiddenChange={setHiddenSections} />}
+            {tab === "layout"  && <SectionOrderPanel order={sectionOrder} onChange={setSectionOrder} hidden={hiddenSections} onHiddenChange={setHiddenSections} sectionTitles={resume.sectionTitles} onAddCustomSection={handleAddCustomSection} onRemoveCustomSection={handleRemoveCustomSection} />}
             {tab === "format"  && <FormattingPanel fmt={fmt} onChange={setFmt} />}
           </div>
         </aside>

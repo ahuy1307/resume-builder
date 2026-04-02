@@ -33,7 +33,7 @@ const EyeOff = () => (
   </svg>
 );
 
-export default function SectionOrderPanel({ order, onChange, hidden, onHiddenChange }) {
+export default function SectionOrderPanel({ order, onChange, hidden, onHiddenChange, sectionTitles, onAddCustomSection, onRemoveCustomSection }) {
   const [dragIdx, setDragIdx] = useState(null);
   const [dropGap, setDropGap] = useState(null);
   const [clone,   setClone]   = useState(null);
@@ -124,6 +124,7 @@ export default function SectionOrderPanel({ order, onChange, hidden, onHiddenCha
 
         {order.map((key, idx) => {
           const meta    = SECTION_META[key] || { label: key };
+          const labelText = sectionTitles?.[key] || meta.label;
           const isGhost = isDragging && dragIdx === idx;
           const isHidden = hidden?.has(key);
           const showAfter = isDragging && dropGap === idx + 1 && dragIdx !== idx && dragIdx !== idx + 1;
@@ -134,7 +135,7 @@ export default function SectionOrderPanel({ order, onChange, hidden, onHiddenCha
                 <div className="sop-grip" onMouseDown={(e) => startDrag(e, idx)} title="Drag to reorder">
                   <Grip />
                 </div>
-                <span className="sop-label" style={{ opacity: isHidden ? 0.45 : 1 }}>{meta.label}</span>
+                <span className="sop-label" style={{ opacity: isHidden ? 0.45 : 1 }}>{labelText}</span>
                 <button
                   className={`sop-eye${isHidden ? " sop-eye-off" : ""}`}
                   onClick={() => toggleHide(key)}
@@ -142,6 +143,16 @@ export default function SectionOrderPanel({ order, onChange, hidden, onHiddenCha
                 >
                   {isHidden ? <EyeOff /> : <EyeOn />}
                 </button>
+                {key.startsWith("custom_") && (
+                  <button
+                    className="sop-trash"
+                    onClick={() => onRemoveCustomSection && onRemoveCustomSection(key)}
+                    title="Delete section"
+                    style={{ background: 'none', border: 'none', color: '#ff4d4f', cursor: 'pointer', padding: '4px', marginLeft: '4px' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+                  </button>
+                )}
               </div>
 
               {showAfter && <Placeholder />}
@@ -150,11 +161,20 @@ export default function SectionOrderPanel({ order, onChange, hidden, onHiddenCha
         })}
       </div>
 
+      {onAddCustomSection && (
+        <button 
+          onClick={onAddCustomSection}
+          style={{ width: "100%", padding: "10px", marginTop: "12px", background: "#f8f9fa", border: "1px dashed #ced4da", borderRadius: "6px", cursor: "pointer", color: "#495057", fontWeight: 500 }}
+        >
+          + Add Custom Section
+        </button>
+      )}
+
       {clone && (
         <div style={{ position: "fixed", left: clone.x, top: clone.y, width: clone.w, height: clone.h, pointerEvents: "none", zIndex: 9999 }}>
           <div className="sop-item is-clone">
             <div className="sop-grip"><Grip /></div>
-            <span className="sop-label">{SECTION_META[order[dragIdx]]?.label}</span>
+            <span className="sop-label">{sectionTitles?.[order[dragIdx]] || SECTION_META[order[dragIdx]]?.label || order[dragIdx]}</span>
           </div>
         </div>
       )}

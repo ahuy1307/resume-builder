@@ -528,13 +528,15 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
   const addItem = useCallback((section) => {
     if (!onChange) return;
     const uid = () => Date.now() + Math.random();
-    const blank = {
+    const isCustom = section.startsWith("custom_");
+    const blankMap = {
       experience:     { id: uid(), title: "", company: "", startDate: "", endDate: "", location: "", bullets: [""] },
       education:      { id: uid(), institution: "", degree: "", startDate: "", endDate: "" },
       certifications: { id: uid(), name: "", issuer: "", date: "" },
       skills:         { id: uid(), label: "", value: "" },
       projects:       { id: uid(), title: "", url: "", startDate: "", endDate: "", bullets: [""] },
-    }[section];
+    };
+    const blank = isCustom ? { id: uid(), label: "", value: "" } : blankMap[section];
     if (!blank) return;
     onChange(prev => ({ ...prev, [section]: [...(prev[section] || []), blank] }));
   }, [onChange]);
@@ -778,7 +780,41 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
 
       {(sectionOrder || DEFAULT_ORDER)
         .filter(key => !hiddenSections?.has(key))
-        .map(key => sectionRenderers[key])}
+        .map(key => {
+          if (sectionRenderers[key]) return sectionRenderers[key];
+          if (key.startsWith("custom_")) {
+            const dataItems = resume[key] || [];
+            const customTitle = st[key] || "Custom Section";
+            return (
+              <SectionWrap key={key} sectionKey={key} hoverLabel="Add Item" onAdd={editable ? () => addItem(key) : null}>
+                <section className="rv-section" style={secStyle}>
+                  <h2 className="rv-section-title" style={titStyle}>
+                    {editable
+                      ? <EditableField value={customTitle} onChange={v => upd(`sectionTitles.${key}`, v)} placeholder="Section Title" />
+                      : customTitle}
+                  </h2>
+                  <hr className="rv-divider" style={divStyle} />
+                  <div className="rv-skills">
+                    {dataItems.map((item) => (
+                      <div key={item.id} className="rv-skill-row">
+                        <EditableField
+                          value={item.value || ""}
+                          onChange={(v) => {
+                            updItem(key, item.id, "value", v);
+                            if (item.label) updItem(key, item.id, "label", "");
+                          }}
+                          placeholder="Your custom items here"
+                        />
+                        {editable && <button className="rv-item-remove" onClick={() => removeItem(key, item.id)}><Trash2 size={12} /></button>}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </SectionWrap>
+            );
+          }
+          return null;
+        })}
     </div>
   );
 }
