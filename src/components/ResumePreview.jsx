@@ -563,7 +563,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
 
   const previewStyle = {
     "--rv-body-size": `${bodyPt}pt`,
-    fontFamily: `"${fmt.bodyFont}", serif`,
+    fontFamily: `${fmt.bodyFont}, sans-serif`,
     fontSize: "var(--rv-body-size)",
     lineHeight: lineH,
     padding: `${fmt.marginTopBottom}mm ${fmt.marginLeftRight}mm`,
@@ -572,7 +572,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
   };
   const secStyle = { marginTop: `${fmt.sectionSpacing}pt` };
   const titStyle = {
-    fontFamily: `"${fmt.headingFont}", serif`,
+    fontFamily: `${fmt.headingFont}, sans-serif`,
     fontSize: `${headingPt}pt`,
     fontWeight: fmt.headingBold ? 700 : 400,
   };
@@ -749,7 +749,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
           onChange={v => upd("personalInfo.name", v)}
           placeholder="Your Name"
           lockCaretStart
-          style={{ fontFamily: `"${fmt.headingFont}", serif` }}
+          style={{ fontFamily: `${fmt.headingFont}, sans-serif` }}
         />
         <div className="rv-contacts">
           <span className="rv-contact-item">{icons.email}
