@@ -892,7 +892,9 @@ body {
 .rv-avatar-remove:hover { background: #c53030; color: #fff; }
 
 /* Info column (name + contacts) */
-.rv-header-info { flex: 1; min-width: 0; }
+.rv-header-info { flex: 1; min-width: 0; text-align: center; }
+/* Left-align info when 2-col avatar layout */
+.rv-header-with-avatar .rv-header-info { text-align: left; }
 
 /* Name */
 .rv-name {

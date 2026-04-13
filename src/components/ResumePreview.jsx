@@ -802,7 +802,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
         )}
 
         {/* Info column */}
-        <div className="rv-header-info" style={{ textAlign: showAvatar ? "left" : headerAlign }}>
+        <div className="rv-header-info">
           <EditableField
             tag="h1"
             className="rv-name"
@@ -822,10 +822,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
               lockCaretStart
             />
           )}
-          <div
-            className="rv-contacts"
-            style={{ justifyContent: showAvatar ? "flex-start" : (headerAlign === "center" ? "center" : headerAlign === "right" ? "flex-end" : "flex-start") }}
-          >
+          <div className="rv-contacts">
             <span className="rv-contact-item">{icons.email}
               <EditableField value={p.email}    onChange={v => upd("personalInfo.email",    v)} placeholder="email@example.com" lockCaretStart />
             </span>
