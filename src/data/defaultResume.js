@@ -1,6 +1,7 @@
 export const defaultResume = {
   personalInfo: {
     name: "",
+    position: "",
     email: "",
     phone: "",
     location: "",
@@ -8,6 +9,8 @@ export const defaultResume = {
     linkedinLabel: "",
     github: "",
     githubLabel: "",
+    avatar: "",
+    dob: "",
   },
   summary: "",
   experience: [

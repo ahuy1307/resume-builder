@@ -31,15 +31,51 @@ export default function App() {
       return new Set(saved ? JSON.parse(saved) : ["projects"]);
     } catch { return new Set(["projects"]); }
   });
+  const [showAvatar, setShowAvatar] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("rb-show-avatar")) ?? false; }
+    catch { return false; }
+  });
+  const [showDob, setShowDob] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("rb-show-dob")) ?? false; }
+    catch { return false; }
+  });
+  const [avatarSize, setAvatarSize] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("rb-avatar-size")) ?? 110; }
+    catch { return 110; }
+  });
+  const [avatarShape, setAvatarShape] = useState(() => {
+    try { return localStorage.getItem("rb-avatar-shape") ?? "circle"; }
+    catch { return "circle"; }
+  });
+  const [avatarRadius, setAvatarRadius] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("rb-avatar-radius")) ?? 50; }
+    catch { return 50; }
+  });
+  const [headerAlign, setHeaderAlign] = useState(() => {
+    try { return localStorage.getItem("rb-header-align") ?? "center"; }
+    catch { return "center"; }
+  });
+  const [avatarSide, setAvatarSide] = useState(() => {
+    try { return localStorage.getItem("rb-avatar-side") ?? "left"; }
+    catch { return "left"; }
+  });
   const [tab, setTab] = useState("layout");
   const [showImport, setShowImport] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [pendingDeleteKey, setPendingDeleteKey] = useState(null);
   const previewRef = useRef(null);
 
-  useEffect(() => { localStorage.setItem("rb-resume",  JSON.stringify(resume));       }, [resume]);
-  useEffect(() => { localStorage.setItem("rb-fmt-v3",  JSON.stringify(fmt));          }, [fmt]);
-  useEffect(() => { localStorage.setItem("rb-order",   JSON.stringify(sectionOrder)); }, [sectionOrder]);
-  useEffect(() => { localStorage.setItem("rb-hidden",  JSON.stringify([...hiddenSections])); }, [hiddenSections]);
+  useEffect(() => { localStorage.setItem("rb-resume",      JSON.stringify(resume));              }, [resume]);
+  useEffect(() => { localStorage.setItem("rb-fmt-v3",      JSON.stringify(fmt));                 }, [fmt]);
+  useEffect(() => { localStorage.setItem("rb-order",       JSON.stringify(sectionOrder));        }, [sectionOrder]);
+  useEffect(() => { localStorage.setItem("rb-hidden",      JSON.stringify([...hiddenSections])); }, [hiddenSections]);
+  useEffect(() => { localStorage.setItem("rb-show-avatar",  JSON.stringify(showAvatar));           }, [showAvatar]);
+  useEffect(() => { localStorage.setItem("rb-show-dob",     JSON.stringify(showDob));              }, [showDob]);
+  useEffect(() => { localStorage.setItem("rb-avatar-size",  JSON.stringify(avatarSize));           }, [avatarSize]);
+  useEffect(() => { localStorage.setItem("rb-avatar-shape",  avatarShape);                          }, [avatarShape]);
+  useEffect(() => { localStorage.setItem("rb-avatar-radius", JSON.stringify(avatarRadius));          }, [avatarRadius]);
+  useEffect(() => { localStorage.setItem("rb-header-align", headerAlign);                          }, [headerAlign]);
+  useEffect(() => { localStorage.setItem("rb-avatar-side",  avatarSide);                           }, [avatarSide]);
 
   const handleAddCustomSection = () => {
     const key = `custom_${Date.now()}`;
@@ -52,7 +88,12 @@ export default function App() {
   };
 
   const handleRemoveCustomSection = (key) => {
-    if (!window.confirm("Are you sure you want to delete this custom section permanently?")) return;
+    setPendingDeleteKey(key);
+  };
+
+  const doDeleteCustomSection = () => {
+    const key = pendingDeleteKey;
+    if (!key) return;
     setSectionOrder(prev => prev.filter(k => k !== key));
     setHiddenSections(prev => { const n = new Set(prev); n.delete(key); return n; });
     setResume(prev => {
@@ -63,6 +104,7 @@ export default function App() {
       }
       return next;
     });
+    setPendingDeleteKey(null);
   };
 
   const handleDownloadPDF = () => { window.print(); };
@@ -71,10 +113,24 @@ export default function App() {
     setFmt(defaultFormatting);
     setSectionOrder(DEFAULT_SECTION_ORDER);
     setHiddenSections(new Set(["projects"]));
+    setShowAvatar(false);
+    setShowDob(false);
+    setAvatarSize(110);
+    setAvatarShape("circle");
+    setAvatarRadius(50);
+    setHeaderAlign("center");
+    setAvatarSide("left");
     localStorage.removeItem("rb-resume");
     localStorage.removeItem("rb-fmt-v3");
     localStorage.removeItem("rb-order");
     localStorage.removeItem("rb-hidden");
+    localStorage.removeItem("rb-show-avatar");
+    localStorage.removeItem("rb-show-dob");
+    localStorage.removeItem("rb-avatar-size");
+    localStorage.removeItem("rb-avatar-shape");
+    localStorage.removeItem("rb-avatar-radius");
+    localStorage.removeItem("rb-header-align");
+    localStorage.removeItem("rb-avatar-side");
     setShowResetConfirm(false);
   };
 
@@ -123,6 +179,24 @@ export default function App() {
         </div>
       )}
 
+      {pendingDeleteKey && (
+        <div className="import-overlay" onClick={() => setPendingDeleteKey(null)}>
+          <div className="import-modal confirm-delete-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="import-close" onClick={() => setPendingDeleteKey(null)}>×</button>
+            <div className="confirm-delete-icon">🗑️</div>
+            <h3 className="import-title">Delete Section</h3>
+            <p className="import-sub">
+              Delete <strong>&ldquo;{resume.sectionTitles?.[pendingDeleteKey] || "Custom Section"}&rdquo;</strong>?
+              <br />This action cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
+              <button className="btn-import" onClick={() => setPendingDeleteKey(null)}>Cancel</button>
+              <button className="btn-delete-confirm" onClick={doDeleteCustomSection}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Layout */}
       <main className="app-main">
         {/* Left – Settings Panel */}
@@ -137,7 +211,7 @@ export default function App() {
           </div>
           <div className="editor-scroll">
             {tab === "layout"  && <SectionOrderPanel order={sectionOrder} onChange={setSectionOrder} hidden={hiddenSections} onHiddenChange={setHiddenSections} sectionTitles={resume.sectionTitles} onAddCustomSection={handleAddCustomSection} onRemoveCustomSection={handleRemoveCustomSection} />}
-            {tab === "format"  && <FormattingPanel fmt={fmt} onChange={setFmt} />}
+            {tab === "format"  && <FormattingPanel fmt={fmt} onChange={setFmt} showAvatar={showAvatar} onShowAvatarChange={setShowAvatar} showDob={showDob} onShowDobChange={setShowDob} avatarSize={avatarSize} onAvatarSizeChange={setAvatarSize} avatarShape={avatarShape} onAvatarShapeChange={setAvatarShape} avatarRadius={avatarRadius} onAvatarRadiusChange={setAvatarRadius} avatarSide={avatarSide} onAvatarSideChange={setAvatarSide} headerAlign={headerAlign} onHeaderAlignChange={setHeaderAlign} />}
           </div>
         </aside>
 
@@ -153,6 +227,13 @@ export default function App() {
                 onHideSection={(key) => setHiddenSections(prev => { const n = new Set(prev); n.add(key); return n; })}
                 onChange={setResume}
                 previewRef={previewRef}
+                showAvatar={showAvatar}
+                showDob={showDob}
+                avatarSize={avatarSize}
+                avatarShape={avatarShape}
+                avatarRadius={avatarRadius}
+                headerAlign={headerAlign}
+                avatarSide={avatarSide}
               />
             </div>
           </div>

@@ -18,6 +18,8 @@ const icons = {
   github:   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>,
   remove:   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>,
   add:      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>,
+  calendar: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
+  camera:   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>,
 };
 
 /* ─── EditableField ───────────────────────────────
@@ -475,7 +477,7 @@ function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBullets
 }
 
 /* ─── Main Component ────────────────────────────── */
-export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSections, onChange, previewRef }) {
+export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSections, onChange, previewRef, showAvatar, showDob, avatarSize = 110, avatarShape = "circle", avatarRadius = 50, headerAlign = "center", avatarSide = "left" }) {
   const { personalInfo: p, summary, experience, education, certifications, skills, sectionTitles = {} } = resume;
   const st = {
     summary: "Professional Summary",
@@ -575,6 +577,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
     fontFamily: `${fmt.headingFont}, sans-serif`,
     fontSize: `${headingPt}pt`,
     fontWeight: fmt.headingBold ? 700 : 400,
+    textAlign: headerAlign,
   };
   const divStyle = { marginBottom: `${fmt.titleContentSpacing}pt` };
   const expStyle = { marginBottom: `${fmt.contentBlockSpacing}pt` };
@@ -741,40 +744,117 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
       ))}
 
       {/* Header */}
-      <div className="rv-header">
-        <EditableField
-          tag="h1"
-          className="rv-name"
-          value={p.name}
-          onChange={v => upd("personalInfo.name", v)}
-          placeholder="Your Name"
-          lockCaretStart
-          style={{ fontFamily: `${fmt.headingFont}, sans-serif` }}
-        />
-        <div className="rv-contacts">
-          <span className="rv-contact-item">{icons.email}
-            <EditableField value={p.email}    onChange={v => upd("personalInfo.email",    v)} placeholder="email@example.com" lockCaretStart />
-          </span>
-          <span className="rv-contact-item">{icons.phone}
-            <EditableField value={p.phone}    onChange={v => upd("personalInfo.phone",    v)} placeholder="+1 000 000 0000" lockCaretStart />
-          </span>
-          <span className="rv-contact-item">{icons.location}
-            <EditableField value={p.location} onChange={v => upd("personalInfo.location", v)} placeholder="City, Country" lockCaretStart />
-          </span>
-          {(p.linkedin || p.github || editable) && (
-            <div className="rv-contact-links">
-              {(p.linkedin || editable) && (
-                <span className="rv-contact-item">{icons.linkedin}
-                  <EditableField value={p.linkedin} onChange={v => upd("personalInfo.linkedin", v)} placeholder="linkedin.com/in/…" lockCaretStart />
-                </span>
-              )}
-              {(p.github || editable) && (
-                <span className="rv-contact-item">{icons.github}
-                  <EditableField value={p.github} onChange={v => upd("personalInfo.github", v)} placeholder="github.com/…" lockCaretStart />
-                </span>
+      <div
+        className={`rv-header${showAvatar ? " rv-header-with-avatar" : ""}`}
+        style={showAvatar && avatarSide === "right" ? { flexDirection: "row-reverse" } : undefined}
+      >
+        {/* Avatar column */}
+        {showAvatar && (
+          <div className="rv-avatar-col">
+            <div
+              className="rv-avatar-wrap"
+              style={{
+                width: avatarSize,
+                height: avatarSize,
+                borderRadius: `${avatarRadius}%`,
+              }}
+            >
+              {p.avatar
+                ? <img src={p.avatar} alt="Avatar" className="rv-avatar-img" />
+                : (
+                    <div className="rv-avatar-placeholder">
+                      {icons.camera}
+                      <span>Add Photo</span>
+                    </div>
+                  )
+              }
+              {editable && (
+                <>
+                  <label className="rv-avatar-overlay" title={p.avatar ? "Change photo" : "Upload photo"}>
+                    {icons.camera}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => upd("personalInfo.avatar", ev.target.result);
+                        reader.readAsDataURL(file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {p.avatar && (
+                    <button
+                      className="rv-avatar-remove"
+                      title="Remove photo"
+                      onClick={() => upd("personalInfo.avatar", "")}
+                    >
+                      {icons.remove}
+                    </button>
+                  )}
+                </>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Info column */}
+        <div className="rv-header-info" style={{ textAlign: showAvatar ? "left" : headerAlign }}>
+          <EditableField
+            tag="h1"
+            className="rv-name"
+            value={p.name}
+            onChange={v => upd("personalInfo.name", v)}
+            placeholder="Your Name"
+            lockCaretStart
+            style={{ fontFamily: `${fmt.headingFont}, sans-serif` }}
+          />
+          {(p.position || editable) && (
+            <EditableField
+              tag="div"
+              className={`rv-position${!p.position ? " rv-editable-empty" : ""}`}
+              value={p.position}
+              onChange={v => upd("personalInfo.position", v)}
+              placeholder="Job Title / Position"
+              lockCaretStart
+            />
           )}
+          <div
+            className="rv-contacts"
+            style={{ justifyContent: showAvatar ? "flex-start" : (headerAlign === "center" ? "center" : headerAlign === "right" ? "flex-end" : "flex-start") }}
+          >
+            <span className="rv-contact-item">{icons.email}
+              <EditableField value={p.email}    onChange={v => upd("personalInfo.email",    v)} placeholder="email@example.com" lockCaretStart />
+            </span>
+            <span className="rv-contact-item">{icons.phone}
+              <EditableField value={p.phone}    onChange={v => upd("personalInfo.phone",    v)} placeholder="+1 000 000 0000" lockCaretStart />
+            </span>
+            <span className="rv-contact-item">{icons.location}
+              <EditableField value={p.location} onChange={v => upd("personalInfo.location", v)} placeholder="City, Country" lockCaretStart />
+            </span>
+            {showDob && (
+              <span className="rv-contact-item">{icons.calendar}
+                <EditableField value={p.dob} onChange={v => upd("personalInfo.dob", v)} placeholder="Date of Birth" lockCaretStart />
+              </span>
+            )}
+            {(p.linkedin || p.github || editable) && (
+              <div className="rv-contact-links">
+                {(p.linkedin || editable) && (
+                  <span className="rv-contact-item">{icons.linkedin}
+                    <EditableField value={p.linkedin} onChange={v => upd("personalInfo.linkedin", v)} placeholder="linkedin.com/in/…" lockCaretStart />
+                  </span>
+                )}
+                {(p.github || editable) && (
+                  <span className="rv-contact-item">{icons.github}
+                    <EditableField value={p.github} onChange={v => upd("personalInfo.github", v)} placeholder="github.com/…" lockCaretStart />
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

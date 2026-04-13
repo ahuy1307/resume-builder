@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { HEADING_FONTS, BODY_FONTS } from "../data/defaultFormatting";
 import FormSection from "./FormSection";
 
@@ -56,11 +57,148 @@ function FontSelect({ label, value, onChange, options }) {
   );
 }
 
-export default function FormattingPanel({ fmt, onChange }) {
+/* ── tiny reusable Toggle ───────────────────────── */
+function Toggle({ label, checked, onChange }) {
+  return (
+    <label className="sop-toggle-row" style={{ cursor: "pointer" }}>
+      <span className="sop-toggle-label">{label}</span>
+      <div className={`sop-toggle-switch${checked ? " on" : ""}`} onClick={() => onChange(!checked)}>
+        <div className="sop-toggle-thumb" />
+      </div>
+    </label>
+  );
+}
+
+/* ── tiny reusable RowLabel ─────────────────────── */
+function RowLabel({ label, children }) {
+  return (
+    <div className="sop-avatar-size-row">
+      <span className="sop-toggle-label">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+export default function FormattingPanel({
+  fmt, onChange,
+  showAvatar, onShowAvatarChange,
+  showDob, onShowDobChange,
+  avatarSize, onAvatarSizeChange,
+  avatarShape, onAvatarShapeChange,
+  avatarRadius, onAvatarRadiusChange,
+  avatarSide, onAvatarSideChange,
+  headerAlign, onHeaderAlignChange,
+}) {
   const set = (key, value) => onChange({ ...fmt, [key]: value });
 
   return (
     <div className="formatting-panel">
+
+      {/* ── Personal Info ── */}
+      <FormSection title={
+        <span style={{ display:"flex", alignItems:"center", gap:7 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+          Personal Info
+        </span>
+      } defaultOpen={true}>
+
+        {/* Avatar toggle */}
+        <Toggle label="Show Avatar (Photo)" checked={showAvatar} onChange={onShowAvatarChange} />
+
+        {showAvatar && (<>
+          {/* Size slider */}
+          <div className="sop-avatar-size-row">
+            <span className="sop-toggle-label" style={{ flexShrink: 0 }}>Photo Size</span>
+            <div className="sop-avatar-size-controls">
+              <button className="sop-size-btn" onClick={() => onAvatarSizeChange(Math.max(60, avatarSize - 10))} disabled={avatarSize <= 60}>−</button>
+              <input className="sop-size-slider" type="range" min={60} max={200} step={5} value={avatarSize} onChange={(e) => onAvatarSizeChange(Number(e.target.value))} />
+              <button className="sop-size-btn" onClick={() => onAvatarSizeChange(Math.min(200, avatarSize + 10))} disabled={avatarSize >= 200}>+</button>
+              <span className="sop-size-val">{avatarSize}px</span>
+            </div>
+          </div>
+
+          {/* Shape */}
+          <RowLabel label="Photo Shape">
+            <div className="sop-shape-picker">
+              <button
+                className={`sop-shape-btn${avatarRadius >= 45 ? " active" : ""}`}
+                onClick={() => { onAvatarShapeChange("circle"); onAvatarRadiusChange(50); }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+                Circle
+              </button>
+              <button
+                className={`sop-shape-btn${avatarRadius <= 5 ? " active" : ""}`}
+                onClick={() => { onAvatarShapeChange("square"); onAvatarRadiusChange(0); }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+                Square
+              </button>
+            </div>
+          </RowLabel>
+
+          {/* Corner Radius slider */}
+          <div className="sop-avatar-size-row">
+            <span className="sop-toggle-label" style={{ flexShrink: 0 }}>Corner Radius</span>
+            <div className="sop-avatar-size-controls">
+              <button className="sop-size-btn" onClick={() => { onAvatarRadiusChange(Math.max(0, avatarRadius - 5)); onAvatarShapeChange("custom"); }} disabled={avatarRadius <= 0}>−</button>
+              <input className="sop-size-slider" type="range" min={0} max={50} step={1} value={avatarRadius} onChange={(e) => { onAvatarRadiusChange(Number(e.target.value)); onAvatarShapeChange("custom"); }} />
+              <button className="sop-size-btn" onClick={() => { onAvatarRadiusChange(Math.min(50, avatarRadius + 5)); onAvatarShapeChange("custom"); }} disabled={avatarRadius >= 50}>+</button>
+              <span className="sop-size-val">{avatarRadius}%</span>
+            </div>
+          </div>
+
+          {/* Side */}
+          <RowLabel label="Photo Position">
+            <div className="sop-shape-picker">
+              <button className={`sop-shape-btn${avatarSide === "left" ? " active" : ""}`} onClick={() => onAvatarSideChange("left")}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="4" width="8" height="16" rx="1"/>
+                  <line x1="14" y1="8" x2="22" y2="8"/>
+                  <line x1="14" y1="12" x2="22" y2="12"/>
+                  <line x1="14" y1="16" x2="19" y2="16"/>
+                </svg>
+                Left
+              </button>
+              <button className={`sop-shape-btn${avatarSide === "right" ? " active" : ""}`} onClick={() => onAvatarSideChange("right")}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="14" y="4" width="8" height="16" rx="1"/>
+                  <line x1="2" y1="8" x2="10" y2="8"/>
+                  <line x1="2" y1="12" x2="10" y2="12"/>
+                  <line x1="2" y1="16" x2="7" y2="16"/>
+                </svg>
+                Right
+              </button>
+            </div>
+          </RowLabel>
+        </>)}
+
+        {/* DOB toggle */}
+        <Toggle label="Show Date of Birth" checked={showDob} onChange={onShowDobChange} />
+
+        <div className="sop-personal-divider" />
+
+        {/* Section title alignment */}
+        <RowLabel label="Section Title Align">
+          <div className="sop-align-picker">
+            {["left", "center", "right"].map(a => (
+              <button
+                key={a}
+                className={`sop-align-btn${headerAlign === a ? " active" : ""}`}
+                onClick={() => onHeaderAlignChange(a)}
+                title={a.charAt(0).toUpperCase() + a.slice(1)}
+              >
+                {a === "left"   && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>}
+                {a === "center" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>}
+                {a === "right"  && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>}
+              </button>
+            ))}
+          </div>
+        </RowLabel>
+      </FormSection>
+
       {/* ── Typography ── */}
       <FormSection title={
         <span style={{display:'flex',alignItems:'center',gap:7}}>

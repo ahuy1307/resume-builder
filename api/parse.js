@@ -11,13 +11,15 @@ Return ONLY valid JSON (no markdown, no explanation) with exactly this shape:
 {
   "personalInfo": {
     "name": "",
+    "position": "",
     "email": "",
     "phone": "",
     "location": "",
     "linkedin": "",
     "linkedinLabel": "LinkedIn",
     "github": "",
-    "githubLabel": ""
+    "githubLabel": "",
+    "dob": ""
   },
   "summary": "",
   "experience": [
@@ -64,6 +66,8 @@ Return ONLY valid JSON (no markdown, no explanation) with exactly this shape:
   }
 }
 Rules:
+- "position": the person's job title or professional tagline (e.g. "Senior Software Engineer", "Full Stack Developer"). Extract from the header area of the resume if present, otherwise leave empty.
+- "dob": date of birth if explicitly stated in the resume (e.g. "01/01/1990", "January 1, 1990"), otherwise leave empty.
 - For bullets: each bullet point is a separate string in the array
 - For skills: use a single text field per row. Keep "label" always empty and put the full skill line in "value"
 - For dates: keep original format from the resume (e.g. "Jan 2024", "2020 - 2022", "Present")
