@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Trash2, List } from "lucide-react";
+import ImageCropModal from "./ImageCropModal";
 
 /* ─── Constants ─────────────────────────────────── */
 const MM_TO_PX = 96 / 25.4;
@@ -489,6 +490,8 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
     ...sectionTitles,
   };
 
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+
   /* Page break tracking */
   const [pageBreaks, setPageBreaks] = useState([]);
   useEffect(() => {
@@ -780,7 +783,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
                         const file = e.target.files?.[0];
                         if (!file) return;
                         const reader = new FileReader();
-                        reader.onload = (ev) => upd("personalInfo.avatar", ev.target.result);
+                        reader.onload = (ev) => setCropImageSrc(ev.target.result);
                         reader.readAsDataURL(file);
                         e.target.value = "";
                       }}
@@ -892,6 +895,18 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
           }
           return null;
         })}
+
+      {cropImageSrc && (
+        <ImageCropModal
+          src={cropImageSrc}
+          shape={avatarShape}
+          onComplete={(croppedBase64) => {
+            upd("personalInfo.avatar", croppedBase64);
+            setCropImageSrc(null);
+          }}
+          onCancel={() => setCropImageSrc(null)}
+        />
+      )}
     </div>
   );
 }
