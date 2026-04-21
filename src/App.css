@@ -911,8 +911,13 @@ body {
 
 /* Contacts row */
 .rv-contacts {
-  display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 5px 12px; font-size: 9pt; color: #333;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 9pt;
+  color: #333;
 }
 /* Left-align contacts when 2-col */
 .rv-header-with-avatar .rv-contacts { justify-content: flex-start; }
@@ -923,8 +928,26 @@ body {
 .rv-contact-item a:hover { text-decoration: underline; color: #111; }
 .rv-contact-item svg { flex-shrink: 0; color: inherit; }
 .rv-contact-links {
-  display: flex; align-items: center; gap: 14px;
-  flex-wrap: wrap; justify-content: center; width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+.rv-contact-link-item {
+  gap: 0;
+}
+.rv-contact-link-item a {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rv-contact-link-item a:hover {
+  color: #1e40af;
+}
+.rv-contact-separator {
+  color: #666;
+  line-height: 1;
 }
 
 .rv-section { margin-top: 12px; }

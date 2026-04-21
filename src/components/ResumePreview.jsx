@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import { Trash2, List } from "lucide-react";
 import ImageCropModal from "./ImageCropModal";
 
@@ -21,6 +21,12 @@ const icons = {
   add:      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>,
   calendar: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
   camera:   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+};
+
+const formatProfileHref = (value) => {
+  const trimmedValue = String(value || "").trim();
+  if (!trimmedValue) return "";
+  return /^https?:\/\//i.test(trimmedValue) ? trimmedValue : `https://${trimmedValue}`;
 };
 
 /* ─── EditableField ───────────────────────────────
@@ -586,6 +592,14 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
   const expStyle = { marginBottom: `${fmt.contentBlockSpacing}pt` };
 
   const editable = !!onChange;
+  const contactItems = [
+    { key: "location", value: p.location, placeholder: "Country", kind: "text" },
+    { key: "phone", value: p.phone, placeholder: "+1 000 000 0000", kind: "text" },
+    { key: "email", value: p.email, placeholder: "email@example.com", kind: "email" },
+    { key: "linkedin", value: p.linkedin, placeholder: "linkedin.com/in/…", kind: "link" },
+    { key: "github", value: p.github, placeholder: "github.com/…", kind: "link" },
+  ];
+  const visibleContactItems = editable ? contactItems : contactItems.filter((item) => item.value);
 
   /* Section renderers */
   const sectionRenderers = {
@@ -826,33 +840,49 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
             />
           )}
           <div className="rv-contacts">
-            <span className="rv-contact-item">{icons.email}
-              <EditableField value={p.email}    onChange={v => upd("personalInfo.email",    v)} placeholder="email@example.com" lockCaretStart />
-            </span>
-            <span className="rv-contact-item">{icons.phone}
-              <EditableField value={p.phone}    onChange={v => upd("personalInfo.phone",    v)} placeholder="+1 000 000 0000" lockCaretStart />
-            </span>
-            <span className="rv-contact-item">{icons.location}
-              <EditableField value={p.location} onChange={v => upd("personalInfo.location", v)} placeholder="City, Country" lockCaretStart />
-            </span>
-            {showDob && (
-              <span className="rv-contact-item">{icons.calendar}
-                <EditableField value={p.dob} onChange={v => upd("personalInfo.dob", v)} placeholder="Date of Birth" lockCaretStart />
-              </span>
-            )}
-            {(p.linkedin || p.github || editable) && (
+            {visibleContactItems.length > 0 && (
               <div className="rv-contact-links">
-                {(p.linkedin || editable) && (
-                  <span className="rv-contact-item">{icons.linkedin}
-                    <EditableField value={p.linkedin} onChange={v => upd("personalInfo.linkedin", v)} placeholder="linkedin.com/in/…" lockCaretStart />
-                  </span>
-                )}
-                {(p.github || editable) && (
-                  <span className="rv-contact-item">{icons.github}
-                    <EditableField value={p.github} onChange={v => upd("personalInfo.github", v)} placeholder="github.com/…" lockCaretStart />
-                  </span>
-                )}
+                {visibleContactItems.map((item, index) => (
+                  <Fragment key={item.key}>
+                    {index > 0 && <span className="rv-contact-separator">|</span>}
+                    <span className="rv-contact-item rv-contact-link-item">
+                      {editable ? (
+                        item.kind === "email" && item.value ? (
+                          <a href={`mailto:${item.value}`}>{item.value}</a>
+                        ) : item.kind === "link" && item.value ? (
+                          <a href={formatProfileHref(item.value)} target="_blank" rel="noreferrer">
+                            {item.value}
+                          </a>
+                        ) : (
+                          <EditableField
+                            value={item.value}
+                            onChange={(v) => upd(`personalInfo.${item.key}`, v)}
+                            placeholder={item.placeholder}
+                            lockCaretStart
+                          />
+                        )
+                      ) : item.kind === "email" ? (
+                        <a href={`mailto:${item.value}`}>{item.value}</a>
+                      ) : item.kind === "link" ? (
+                        <a href={formatProfileHref(item.value)} target="_blank" rel="noreferrer">
+                          {item.value}
+                        </a>
+                      ) : (
+                        <span>{item.value}</span>
+                      )}
+                    </span>
+                  </Fragment>
+                ))}
               </div>
+            )}
+            {showDob && (
+              <>
+                {visibleContactItems.length > 0 && <span className="rv-contact-separator">|</span>}
+                <span className="rv-contact-item">
+                  {icons.calendar}
+                  <EditableField value={p.dob} onChange={v => upd("personalInfo.dob", v)} placeholder="Date of Birth" lockCaretStart />
+                </span>
+              </>
             )}
           </div>
         </div>
