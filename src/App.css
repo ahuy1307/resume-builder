@@ -836,7 +836,7 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 /* 2-column layout when avatar is present */
@@ -951,6 +951,14 @@ body {
 }
 
 .rv-section { margin-top: 12px; }
+
+/* Khoảng cách nhỏ hơn giữa header và section đầu tiên (secStyle inline thường 12pt+) */
+.resume-preview > .rv-header + section.rv-section {
+  margin-top: 6pt !important;
+}
+.resume-preview > .rv-header + .rv-section-wrap > section.rv-section {
+  margin-top: 6pt !important;
+}
 .rv-section-title {
   font-family: 'Times New Roman', Times, serif;
   font-size: 12pt; font-weight: 400; color: #111; margin-bottom: 3px;
@@ -982,7 +990,7 @@ body {
 .rv-exp-company { font-weight: 400; }
 .rv-exp-meta { font-style: italic; font-size: inherit; color: #444; white-space: nowrap; }
 .rv-bullets { margin-top: 5px; padding-left: 18px; list-style-type: disc; }
-.rv-bullets li { font-size: inherit; color: #222; margin-bottom: 1px; line-height: 1.38; }
+.rv-bullets li { font-size: inherit; color: #222; margin-bottom: 3px; line-height: 1.44; }
 .rv-bullets li b, .rv-bullets li strong { font-weight: 700; }
 .rv-bullets li i, .rv-bullets li em { font-style: italic; }
 /* Rich-text bullet editor */
@@ -1072,13 +1080,13 @@ body {
 .rv-proj-edit-done:hover { background: #eee; border-color: #aaa; }
 
 /* ─── Exp Bullets: contentEditable per bullet ──────── */
-.rv-exp-bullets-wrap { position: relative; margin-top: 4px; padding-left: 14px; display: flex; flex-direction: column; gap: 0; }
+.rv-exp-bullets-wrap { position: relative; margin-top: 4px; padding-left: 14px; display: flex; flex-direction: column; gap: 2px; }
 .rv-exp-bullet-row {
   position: relative;
 }
 .rv-bullet-dot {
   position: absolute; left: 0; top: 0;
-  color: #555; font-size: inherit; line-height: 1.38;
+  color: #555; font-size: inherit; line-height: 1.44;
   pointer-events: none;
 }
 .rv-exp-bullet-ce {
@@ -1086,10 +1094,10 @@ body {
   width: 100%;
   outline: none;
   border-radius: 3px;
-  padding: 0 22px 0 12px; /* left: space for dot, right: space for delete btn */
+  padding: 1px 22px 1px 12px; /* left: space for dot, right: space for delete btn */
   font: inherit;
   color: #222;
-  line-height: 1.38;
+  line-height: 1.44;
   transition: background .12s, box-shadow .12s;
   white-space: pre-wrap;
   word-break: break-word;
