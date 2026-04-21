@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback } from "react";
-import { Trash2, List } from "lucide-react";
+import { Trash2, List, Pencil } from "lucide-react";
 import ImageCropModal from "./ImageCropModal";
 
 /* ─── Constants ─────────────────────────────────── */
@@ -28,6 +28,47 @@ const formatProfileHref = (value) => {
   if (!trimmedValue) return "";
   return /^https?:\/\//i.test(trimmedValue) ? trimmedValue : `https://${trimmedValue}`;
 };
+
+/** Only show project title as a link when URL looks like a real web address (empty / extract noise → plain title). */
+function isRealProjectUrl(url) {
+  const t = String(url ?? "").trim();
+  if (!t) return false;
+  const lower = t.toLowerCase();
+  const junk = new Set(["-", "—", "–", "n/a", "na", "none", "null", "nil", "#", "tbd", "todo", ".", "..", "/", "\\"]);
+  if (junk.has(lower)) return false;
+  const href = formatProfileHref(t);
+  let u;
+  try {
+    u = new URL(href);
+  } catch {
+    return false;
+  }
+  const host = u.hostname;
+  if (!host || host.length < 2) return false;
+  if (host === "localhost" || host.startsWith("127.")) return true;
+  if (!host.includes(".")) return false;
+  return true;
+}
+
+/** Strip risky markup when persisting rich-text bullets (bold/italic from contentEditable). */
+function sanitizeRichBulletHtml(html) {
+  return String(html || "")
+    .trim()
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<\/?(?:script|iframe|object|embed|link|meta|style|base)\b[^>]*>/gi, "")
+    .replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/javascript:/gi, "");
+}
+
+function readExpBulletContentsFromDom(items, rowRefs) {
+  const r = items.length > 0 ? items : [""];
+  return r.map((_, i) => {
+    const el = rowRefs.current[i];
+    const plain = (el?.innerText ?? "").replace(/\u00a0/g, " ").trim();
+    if (!plain) return "";
+    return sanitizeRichBulletHtml(el.innerHTML);
+  });
+}
 
 /* ─── EditableField ───────────────────────────────
  *  contentEditable that only syncs state on blur,
@@ -278,17 +319,16 @@ function SectionWrap({ hoverLabel, onAdd, children }) {
 
 /* ─── ExpBullets: contentEditable per bullet, Enter=new ─ */
 function ExpBullets({ bullets = [], onChange, editable }) {
-  const normalizeLine = (line) => String(line || "").replace(/^[•*\-]\s*/, "").trim();
+  const normalizeLine = (line) => String(line || "").replace(/^[•*-]\s*/, "").trim();
   const items = bullets.map(normalizeLine);
   const rowRefs = useRef([]);
+  const wrapRef = useRef(null);
+  const [showFmtBar, setShowFmtBar] = useState(false);
 
   /* flush all rows → call onChange */
   const flush = useCallback(() => {
-    const next = items.map((_, i) => {
-      const text = (rowRefs.current[i]?.innerText ?? "").trim();
-      return text ? `• ${text}` : "";
-    });
-    onChange(next);
+    const contents = readExpBulletContentsFromDom(items, rowRefs);
+    onChange(contents.map((c) => (c ? `• ${c}` : "")));
   }, [items, onChange]);
 
   /* place caret at end of a contentEditable node */
@@ -318,21 +358,16 @@ function ExpBullets({ bullets = [], onChange, editable }) {
   const handleKeyDown = (e, idx) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      // insert new bullet after current
-      const curText = rowRefs.current[idx]?.innerText?.trim() ?? "";
-      const next = [...items];
-      next.splice(idx + 1, 0, "");
-      // also save current before inserting — patch current value in next array
-      next[idx] = curText;
-      onChange(next.map(l => l ? `• ${l}` : ""));
-      // after state update, focus the new row
+      const contents = readExpBulletContentsFromDom(items, rowRefs);
+      contents.splice(idx + 1, 0, "");
+      onChange(contents.map((c) => (c ? `• ${c}` : "")));
       setTimeout(() => caretAtStart(rowRefs.current[idx + 1]), 20);
     } else if (e.key === "Backspace") {
       const text = rowRefs.current[idx]?.innerText?.trim() ?? "";
       if (text === "" && items.length > 1) {
         e.preventDefault();
-        const next = items.filter((_, i) => i !== idx);
-        onChange(next.map(l => l ? `• ${l}` : ""));
+        const contents = readExpBulletContentsFromDom(items, rowRefs).filter((_, i) => i !== idx);
+        onChange(contents.some((c) => c) ? contents.map((c) => (c ? `• ${c}` : "")) : [""]);
         const focusTarget = idx > 0 ? idx - 1 : 0;
         setTimeout(() => caretAtEnd(rowRefs.current[focusTarget]), 20);
       }
@@ -362,7 +397,31 @@ function ExpBullets({ bullets = [], onChange, editable }) {
   const rows = items.length > 0 ? items : [""];
 
   return (
-    <div className="rv-exp-bullets-wrap">
+    <div
+      ref={wrapRef}
+      className="rv-exp-bullets-wrap"
+      onFocus={() => setShowFmtBar(true)}
+      onBlur={(e) => {
+        const w = wrapRef.current;
+        if (w && !w.contains(e.relatedTarget)) setShowFmtBar(false);
+      }}
+    >
+      {showFmtBar && (
+        <div className="rv-exp-bullet-toolbar rv-bullet-toolbar-float" aria-label="Bullet formatting">
+          <button
+            type="button"
+            className="rv-bt-btn"
+            title="Bold (Ctrl+B)"
+            onMouseDown={(e) => { e.preventDefault(); document.execCommand("bold"); }}
+          ><b>B</b></button>
+          <button
+            type="button"
+            className="rv-bt-btn"
+            title="Italic (Ctrl+I)"
+            onMouseDown={(e) => { e.preventDefault(); document.execCommand("italic"); }}
+          ><i>I</i></button>
+        </div>
+      )}
       {rows.map((b, idx) => (
         <div key={idx} className="rv-exp-bullet-row">
           <span className="rv-bullet-dot">•</span>
@@ -377,11 +436,12 @@ function ExpBullets({ bullets = [], onChange, editable }) {
           />
           {items.length > 1 && (
             <button
+              type="button"
               className="rv-tb-btn rv-tb-del rv-exp-bullet-del"
               onMouseDown={(e) => {
                 e.preventDefault();
-                const next = items.filter((_, i) => i !== idx);
-                onChange(next.map(l => l ? `• ${l}` : ""));
+                const contents = readExpBulletContentsFromDom(items, rowRefs).filter((_, i) => i !== idx);
+                onChange(contents.some((c) => c) ? contents.map((c) => (c ? `• ${c}` : "")) : [""]);
               }}
               title="Remove bullet"
             ><Trash2 size={11} /></button>
@@ -440,8 +500,84 @@ function ExpItem({ exp, expStyle, editable, updItem, removeItem, onBulletsChange
 }
 
 /* ─── ProjectItem ────────────────────────────────── */
-function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBulletsChange }) {
+function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBulletsChange, printMode = false }) {
   const [hov, setHov] = useState(false);
+  const [projEditOpen, setProjEditOpen] = useState(false);
+  const projEditFieldsRef = useRef(null);
+  const hasLink = isRealProjectUrl(proj.url);
+
+  useEffect(() => {
+    if (printMode) setProjEditOpen(false);
+  }, [printMode]);
+
+  const flushProjectEditFields = useCallback(() => {
+    const root = projEditFieldsRef.current;
+    if (!root) return;
+    const editables = root.querySelectorAll(".rv-editable");
+    const titleRaw = editables[0] ? String(editables[0].innerText ?? "").trim() : "";
+    const urlRaw = editables[1] ? String(editables[1].innerText ?? "").trim() : "";
+    if (titleRaw !== String(proj.title ?? "").trim()) {
+      updItem("projects", proj.id, "title", titleRaw);
+    }
+    if (urlRaw !== String(proj.url ?? "").trim()) {
+      updItem("projects", proj.id, "url", urlRaw);
+    }
+  }, [proj.id, proj.title, proj.url, updItem]);
+
+  const titleNode = (() => {
+    if (editable && !printMode && projEditOpen) {
+      return (
+        <div ref={projEditFieldsRef} className="rv-proj-edit-fields">
+          <EditableField
+            value={proj.title}
+            onChange={(v) => updItem("projects", proj.id, "title", v)}
+            placeholder="Project Name"
+            style={{ fontWeight: 700 }}
+          />
+          <EditableField
+            value={proj.url}
+            onChange={(v) => updItem("projects", proj.id, "url", v)}
+            placeholder="Project URL"
+            className="rv-proj-url-input"
+          />
+          <button
+            type="button"
+            className="rv-proj-edit-done"
+            onClick={() => {
+              flushProjectEditFields();
+              setProjEditOpen(false);
+            }}
+          >
+            Done
+          </button>
+        </div>
+      );
+    }
+    if (hasLink) {
+      return (
+        <a
+          href={formatProfileHref(proj.url)}
+          target="_blank"
+          rel="noreferrer"
+          className="rv-proj-title-link"
+          style={{ fontWeight: 700 }}
+        >
+          {String(proj.title || "").trim() || "Project"}
+        </a>
+      );
+    }
+    if (!editable) {
+      return <span style={{ fontWeight: 700 }}>{proj.title}</span>;
+    }
+    return (
+      <EditableField
+        value={proj.title}
+        onChange={(v) => updItem("projects", proj.id, "title", v)}
+        placeholder="Project Name"
+        style={{ fontWeight: 700 }}
+      />
+    );
+  })();
 
   return (
     <div
@@ -453,6 +589,15 @@ function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBullets
       {editable && hov && (
         <div className="rv-item-toolbar">
           <button
+            type="button"
+            className="rv-tb-btn"
+            title="Edit name & link"
+            onClick={() => setProjEditOpen(true)}
+          >
+            <Pencil size={13} />
+          </button>
+          <button
+            type="button"
             className="rv-tb-btn rv-tb-del"
             onMouseDown={(e) => { e.preventDefault(); removeItem("projects", proj.id); }}
           ><Trash2 size={13} /></button>
@@ -460,12 +605,8 @@ function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBullets
       )}
 
       <div className="rv-exp-header">
-        <div className="rv-exp-title">
-          <EditableField value={proj.title} onChange={v => updItem("projects", proj.id, "title", v)} placeholder="Project Name" style={{ fontWeight: 700 }} />
-          <span className={`rv-proj-url-wrap${!proj.url ? " rv-proj-url-empty" : ""}`}>
-            <span style={{ fontWeight: 400 }}> | </span>
-            <EditableField value={proj.url} onChange={v => updItem("projects", proj.id, "url", v)} placeholder="Project URL" className="rv-proj-url" />
-          </span>
+        <div className="rv-exp-title rv-proj-title-stack">
+          {titleNode}
         </div>
         <div className="rv-exp-meta" style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <EditableField value={proj.startDate} onChange={v => updItem("projects", proj.id, "startDate", v)} placeholder="Start" />
@@ -660,6 +801,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
               proj={proj}
               projStyle={expStyle}
               editable={editable}
+              printMode={printMode}
               updItem={updItem}
               removeItem={removeItem}
               onBulletsChange={(bullets) => updBulletsForSection("projects", proj.id, bullets)}

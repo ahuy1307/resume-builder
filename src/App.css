@@ -983,6 +983,8 @@ body {
 .rv-exp-meta { font-style: italic; font-size: inherit; color: #444; white-space: nowrap; }
 .rv-bullets { margin-top: 5px; padding-left: 18px; list-style-type: disc; }
 .rv-bullets li { font-size: inherit; color: #222; margin-bottom: 3px; line-height: 1.5; }
+.rv-bullets li b, .rv-bullets li strong { font-weight: 700; }
+.rv-bullets li i, .rv-bullets li em { font-style: italic; }
 /* Rich-text bullet editor */
 .rv-bullet-editor-wrap { position: relative; margin-top: 4px; }
 .rv-bullet-toolbar-float {
@@ -1028,14 +1030,49 @@ body {
   background: rgba(0,0,0,.02);
 }
 .rv-bt-list-on { background: rgba(255,255,255,.25) !important; }
-/* Project URL style */
-.rv-proj-url { color: var(--accent); font-size: inherit; }
+/* Project: link on title (print / view); URL row = edit-only in preview */
+.rv-proj-title-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+}
+.rv-proj-title-link {
+  font-size: inherit;
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+.rv-proj-title-link:hover { color: #1e40af; }
+.rv-proj-url-input { color: var(--accent); font-size: inherit; }
+.rv-proj-edit-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  padding: 4px 0;
+}
+.rv-proj-edit-done {
+  align-self: flex-start;
+  font-size: 9pt;
+  padding: 2px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  color: #222;
+}
+.rv-proj-edit-done:hover { background: #eee; border-color: #aaa; }
 
 /* ─── Exp Bullets: contentEditable per bullet ──────── */
 .rv-exp-bullets-wrap { position: relative; margin-top: 4px; padding-left: 14px; display: flex; flex-direction: column; gap: 1px; }
-.rv-exp-bullet-toolbar {
-  position: absolute; top: -38px; left: 0;
-}
 .rv-exp-bullet-row {
   position: relative;
 }
@@ -1057,6 +1094,8 @@ body {
   white-space: pre-wrap;
   word-break: break-word;
 }
+.rv-exp-bullet-ce b, .rv-exp-bullet-ce strong { font-weight: 700; }
+.rv-exp-bullet-ce i, .rv-exp-bullet-ce em { font-style: italic; }
 .rv-exp-bullet-ce:hover { background: rgba(0,0,0,.04); }
 .rv-exp-bullet-ce:focus { background: rgba(0,0,0,.06); box-shadow: 0 0 0 1.5px #999 inset; }
 .rv-exp-bullet-ce:empty::before {
@@ -1105,6 +1144,8 @@ body {
   .editor-panel,
   .rv-page-break-indicator,
   .rv-bullet-toolbar,
+  .rv-bullet-toolbar-float,
+  .rv-exp-bullet-del,
   .rv-item-remove,
   .rv-add-bullet-btn,
   .rv-section-add-btn,
