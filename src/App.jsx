@@ -63,6 +63,7 @@ export default function App() {
   const [showImport, setShowImport] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [pendingDeleteKey, setPendingDeleteKey] = useState(null);
+  const [isPrinting, setIsPrinting] = useState(false);
   const previewRef = useRef(null);
 
   useEffect(() => { localStorage.setItem("rb-resume",      JSON.stringify(resume));              }, [resume]);
@@ -107,7 +108,24 @@ export default function App() {
     setPendingDeleteKey(null);
   };
 
-  const handleDownloadPDF = () => { window.print(); };
+  useEffect(() => {
+    const handleBeforePrint = () => setIsPrinting(true);
+    const handleAfterPrint = () => setIsPrinting(false);
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+    return () => {
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
+    };
+  }, []);
+
+  const handleDownloadPDF = () => {
+    setIsPrinting(true);
+    requestAnimationFrame(() => {
+      window.print();
+      setTimeout(() => setIsPrinting(false), 0);
+    });
+  };
   const handleClearAllData = () => {
     setResume(defaultResume);
     setFmt(defaultFormatting);
@@ -234,6 +252,7 @@ export default function App() {
                 avatarRadius={avatarRadius}
                 headerAlign={headerAlign}
                 avatarSide={avatarSide}
+                printMode={isPrinting}
               />
             </div>
           </div>

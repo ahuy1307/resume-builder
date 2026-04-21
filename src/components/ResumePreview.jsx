@@ -484,7 +484,7 @@ function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBullets
 }
 
 /* ─── Main Component ────────────────────────────── */
-export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSections, onChange, previewRef, showAvatar, showDob, avatarSize = 110, avatarShape = "circle", avatarRadius = 50, headerAlign = "center", avatarSide = "left" }) {
+export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSections, onChange, previewRef, showAvatar, showDob, avatarSize = 110, avatarShape = "circle", avatarRadius = 50, headerAlign = "center", avatarSide = "left", printMode = false }) {
   const { personalInfo: p, summary, experience, education, certifications, skills, sectionTitles = {} } = resume;
   const st = {
     summary: "Professional Summary",
@@ -592,6 +592,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
   const expStyle = { marginBottom: `${fmt.contentBlockSpacing}pt` };
 
   const editable = !!onChange;
+  const shouldRenderLinks = !editable || printMode;
   const contactItems = [
     { key: "location", value: p.location, placeholder: "Country", kind: "text" },
     { key: "phone", value: p.phone, placeholder: "+1 000 000 0000", kind: "text" },
@@ -847,16 +848,16 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
                     {index > 0 && <span className="rv-contact-separator">|</span>}
                     <span className="rv-contact-item rv-contact-link-item">
                       {editable ? (
-                        item.kind === "email" && item.value ? (
+                        shouldRenderLinks && item.kind === "email" && item.value ? (
                           <a href={`mailto:${item.value}`}>{item.value}</a>
-                        ) : item.kind === "link" && item.value ? (
+                        ) : shouldRenderLinks && item.kind === "link" && item.value ? (
                           <a href={formatProfileHref(item.value)} target="_blank" rel="noreferrer">
                             {item.value}
                           </a>
                         ) : (
                           <EditableField
                             value={item.value}
-                            onChange={(v) => upd(`personalInfo.${item.key}`, v)}
+                            onChange={(v) => upd(`personalInfo.${item.key}`, item.kind === "link" ? formatProfileHref(v) : v)}
                             placeholder={item.placeholder}
                             lockCaretStart
                           />
