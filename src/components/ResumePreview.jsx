@@ -999,7 +999,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
                         ) : (
                           <EditableField
                             value={item.value}
-                            onChange={(v) => upd(`personalInfo.${item.key}`, item.kind === "link" ? formatProfileHref(v) : v)}
+                            onChange={(v) => upd(`personalInfo.${item.key}`, v)}
                             placeholder={item.placeholder}
                             lockCaretStart
                           />
