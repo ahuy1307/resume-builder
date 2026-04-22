@@ -990,7 +990,7 @@ body {
 .rv-exp-company { font-weight: 400; }
 .rv-exp-meta { font-style: italic; font-size: inherit; color: #444; white-space: nowrap; }
 .rv-bullets { margin-top: 5px; padding-left: 18px; list-style-type: disc; }
-.rv-bullets li { font-size: inherit; color: #222; margin-bottom: 3px; line-height: 1.38; }
+.rv-bullets li { font-size: inherit; color: #222; margin-bottom: 3px; line-height: 1.3; }
 .rv-bullets li b, .rv-bullets li strong { font-weight: 700; }
 .rv-bullets li i, .rv-bullets li em { font-style: italic; }
 /* Rich-text bullet editor */
@@ -1086,7 +1086,7 @@ body {
 }
 .rv-bullet-dot {
   position: absolute; left: 0; top: 0;
-  color: #555; font-size: inherit; line-height: 1.38;
+  color: #555; font-size: inherit; line-height: 1.3;
   pointer-events: none;
 }
 .rv-exp-bullet-ce {
@@ -1097,7 +1097,7 @@ body {
   padding: 1px 22px 1px 12px; /* left: space for dot, right: space for delete btn */
   font: inherit;
   color: #222;
-  line-height: 1.38;
+  line-height: 1.3;
   transition: background .12s, box-shadow .12s;
   white-space: pre-wrap;
   word-break: break-word;
@@ -1121,7 +1121,7 @@ body {
 .rv-edu-degree { font-style: italic; font-size: inherit; color: #333; }
 .rv-edu-dates { font-size: inherit; color: #555; }
 
-.rv-cert-item { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; flex-wrap: wrap; gap: 3px; }
+.rv-cert-item { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; flex-wrap: wrap; gap: 3px; line-height: 1.3; }
 .rv-cert-left { font-size: inherit; color: #111; }
 .rv-cert-issuer { font-weight: 400; }
 .rv-cert-date { font-style: italic; font-size: inherit; color: #444; }
@@ -1134,6 +1134,7 @@ body {
   gap: 2px;
   font-size: inherit;
   color: #222;
+  line-height: 1.3;
 }
 .rv-skill-row strong { font-weight: 700; }
 
