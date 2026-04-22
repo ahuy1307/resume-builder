@@ -18,7 +18,7 @@ export const defaultFormatting = {
   // Spacing (pt)
   sectionSpacing: 6,
   titleContentSpacing: 4,
-  contentBlockSpacing: 6,
+  contentBlockSpacing: 4,
 };
 
 export const HEADING_FONTS = [

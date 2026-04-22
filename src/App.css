@@ -1121,12 +1121,12 @@ body {
 .rv-edu-degree { font-style: italic; font-size: inherit; color: #333; }
 .rv-edu-dates { font-size: inherit; color: #555; }
 
-.rv-cert-item { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; flex-wrap: wrap; gap: 4px; }
+.rv-cert-item { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; flex-wrap: wrap; gap: 3px; }
 .rv-cert-left { font-size: inherit; color: #111; }
 .rv-cert-issuer { font-weight: 400; }
 .rv-cert-date { font-style: italic; font-size: inherit; color: #444; }
 
-.rv-skills { display: flex; flex-direction: column; gap: 4px; }
+.rv-skills { display: flex; flex-direction: column; gap: 2px; }
 .rv-skill-row {
   display: flex;
   align-items: baseline;
