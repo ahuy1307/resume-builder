@@ -472,21 +472,34 @@ function ExpItem({ exp, expStyle, editable, updItem, removeItem, onBulletsChange
         </div>
       )}
 
-      <div className="rv-exp-header">
-        <div className="rv-exp-title">
-          <EditableField value={exp.title}   onChange={v => updItem("experience", exp.id, "title",   v)} placeholder="Job Title" style={{ fontWeight: 700 }} />
-          <span className={`rv-exp-company-wrap${!exp.company ? " rv-exp-company-empty" : ""}`}>
-            <span style={{ fontWeight: 400 }}> – </span>
-            <EditableField value={exp.company} onChange={v => updItem("experience", exp.id, "company", v)} placeholder="Company" />
-          </span>
+      <div className="rv-exp-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+        <div className="rv-exp-left" style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <EditableField
+            value={exp.company}
+            onChange={v => updItem("experience", exp.id, "company", v)}
+            placeholder="Company"
+            style={{ fontWeight: 700 }}
+          />
+          <EditableField
+            value={exp.title}
+            onChange={v => updItem("experience", exp.id, "title", v)}
+            placeholder="Job Title"
+            style={{ fontStyle: "italic" }}
+          />
         </div>
-        <div className="rv-exp-meta" style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <EditableField value={exp.startDate} onChange={v => updItem("experience", exp.id, "startDate", v)} placeholder="Start" />
-          <span> – </span>
-          <EditableField value={exp.endDate} onChange={v => updItem("experience", exp.id, "endDate", v)} placeholder="End" />
+        <div className="rv-exp-right" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", minWidth: 0 }}>
           {(exp.location || editable) && (
-            <><span> | </span><EditableField value={exp.location} onChange={v => updItem("experience", exp.id, "location", v)} placeholder="Location" /></>
+            <EditableField
+              value={exp.location}
+              onChange={v => updItem("experience", exp.id, "location", v)}
+              placeholder="Location"
+            />
           )}
+          <div className="rv-exp-meta" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <EditableField value={exp.startDate} onChange={v => updItem("experience", exp.id, "startDate", v)} placeholder="Start" />
+            <span> – </span>
+            <EditableField value={exp.endDate} onChange={v => updItem("experience", exp.id, "endDate", v)} placeholder="End" />
+          </div>
         </div>
       </div>
 
@@ -555,15 +568,18 @@ function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBullets
     }
     if (hasLink) {
       return (
-        <a
-          href={formatProfileHref(proj.url)}
-          target="_blank"
-          rel="noreferrer"
-          className="rv-proj-title-link"
-          style={{ fontWeight: 700 }}
-        >
+        <span style={{ fontWeight: 700 }}>
           {String(proj.title || "").trim() || "Project"}
-        </a>
+          <span> | </span>
+          <a
+            href={formatProfileHref(proj.url)}
+            target="_blank"
+            rel="noreferrer"
+            className="rv-proj-title-link"
+          >
+            GitHub
+          </a>
+        </span>
       );
     }
     if (!editable) {
@@ -852,7 +868,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
             <div key={cert.id} className="rv-cert-item">
               <div className="rv-cert-left">
                 <EditableField value={cert.name} onChange={v => updItem("certifications", cert.id, "name", v)} placeholder="Certification Name" style={{ fontWeight: 700 }} />
-                <span> – </span>
+                <span> | </span>
                 <EditableField value={cert.issuer} onChange={v => updItem("certifications", cert.id, "issuer", v)} placeholder="Issuer" />
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
