@@ -16,7 +16,7 @@ export const defaultFormatting = {
   marginTopBottom: 6,
   marginLeftRight: 6,
   // Spacing (pt)
-  sectionSpacing: 8,
+  sectionSpacing: 6,
   titleContentSpacing: 4,
   contentBlockSpacing: 6,
 };

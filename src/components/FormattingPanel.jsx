@@ -246,7 +246,7 @@ export default function FormattingPanel({
         <Slider label="Top & Bottom" value={fmt.marginTopBottom} onChange={(v) => set("marginTopBottom", v)} min={5} max={40} step={1} unit="mm" />
         <Slider label="Left & Right" value={fmt.marginLeftRight} onChange={(v) => set("marginLeftRight", v)} min={5} max={40} step={1} unit="mm" />
         <div className="slider-section-title" style={{ marginTop: 12 }}>SPACING</div>
-        <Slider label="Between Sections" value={fmt.sectionSpacing} onChange={(v) => set("sectionSpacing", v)} min={2} max={30} step={1} unit="pt" />
+        <Slider label="Between Sections" value={fmt.sectionSpacing} onChange={(v) => set("sectionSpacing", v)} min={0} max={30} step={1} unit="pt" />
         <Slider label="Title → Content" value={fmt.titleContentSpacing} onChange={(v) => set("titleContentSpacing", v)} min={2} max={20} step={1} unit="pt" />
         <Slider label="Between Content Blocks" value={fmt.contentBlockSpacing} onChange={(v) => set("contentBlockSpacing", v)} min={2} max={20} step={1} unit="pt" />
       </FormSection>
