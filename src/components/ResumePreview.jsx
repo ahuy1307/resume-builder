@@ -453,7 +453,7 @@ function ExpBullets({ bullets = [], onChange, editable }) {
 }
 
 /* ─── ExpItem: uses input fields for bullets ──────── */
-function ExpItem({ exp, expStyle, editable, updItem, removeItem, onBulletsChange }) {
+function ExpItem({ exp, expStyle, editable, updItem, removeItem, onBulletsChange, canMoveUp, canMoveDown, onMoveUp, onMoveDown }) {
   const [hov, setHov] = useState(false);
 
   return (
@@ -465,6 +465,24 @@ function ExpItem({ exp, expStyle, editable, updItem, removeItem, onBulletsChange
     >
       {editable && hov && (
         <div className="rv-item-toolbar">
+          <button
+            type="button"
+            className="rv-tb-btn"
+            title="Move up"
+            disabled={!canMoveUp}
+            onMouseDown={(e) => { e.preventDefault(); if (canMoveUp) onMoveUp(); }}
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            className="rv-tb-btn"
+            title="Move down"
+            disabled={!canMoveDown}
+            onMouseDown={(e) => { e.preventDefault(); if (canMoveDown) onMoveDown(); }}
+          >
+            ↓
+          </button>
           <button
             className="rv-tb-btn rv-tb-del"
             onMouseDown={(e) => { e.preventDefault(); removeItem("experience", exp.id); }}
@@ -513,7 +531,7 @@ function ExpItem({ exp, expStyle, editable, updItem, removeItem, onBulletsChange
 }
 
 /* ─── ProjectItem ────────────────────────────────── */
-function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBulletsChange, printMode = false }) {
+function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBulletsChange, canMoveUp, canMoveDown, onMoveUp, onMoveDown, printMode = false }) {
   const [hov, setHov] = useState(false);
   const [projEditOpen, setProjEditOpen] = useState(false);
   const projEditFieldsRef = useRef(null);
@@ -604,6 +622,24 @@ function ProjectItem({ proj, projStyle, editable, updItem, removeItem, onBullets
     >
       {editable && hov && (
         <div className="rv-item-toolbar">
+          <button
+            type="button"
+            className="rv-tb-btn"
+            title="Move up"
+            disabled={!canMoveUp}
+            onMouseDown={(e) => { e.preventDefault(); if (canMoveUp) onMoveUp(); }}
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            className="rv-tb-btn"
+            title="Move down"
+            disabled={!canMoveDown}
+            onMouseDown={(e) => { e.preventDefault(); if (canMoveDown) onMoveDown(); }}
+          >
+            ↓
+          </button>
           <button
             type="button"
             className="rv-tb-btn"
@@ -714,6 +750,20 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
     onChange(prev => ({ ...prev, [section]: prev[section].filter(x => x.id !== id) }));
   }, [onChange]);
 
+  const moveItem = useCallback((section, itemId, direction) => {
+    if (!onChange) return;
+    onChange((prev) => {
+      const items = Array.isArray(prev[section]) ? [...prev[section]] : [];
+      const currentIndex = items.findIndex((x) => x.id === itemId);
+      if (currentIndex === -1) return prev;
+      const nextIndex = currentIndex + direction;
+      if (nextIndex < 0 || nextIndex >= items.length) return prev;
+      const [moved] = items.splice(currentIndex, 1);
+      items.splice(nextIndex, 0, moved);
+      return { ...prev, [section]: items };
+    });
+  }, [onChange]);
+
   const updBulletsForSection = useCallback((section, itemId, bullets) => {
     if (!onChange) return;
     onChange(prev => {
@@ -787,7 +837,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
               : st.experience}
           </h2>
           <hr className="rv-divider" style={divStyle} />
-          {experience.map(exp => (
+          {experience.map((exp, index) => (
             <ExpItem
               key={exp.id}
               exp={exp}
@@ -796,6 +846,10 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
               updItem={updItem}
               removeItem={removeItem}
               onBulletsChange={(bullets) => updBulletsForSection("experience", exp.id, bullets)}
+              canMoveUp={index > 0}
+              canMoveDown={index < experience.length - 1}
+              onMoveUp={() => moveItem("experience", exp.id, -1)}
+              onMoveDown={() => moveItem("experience", exp.id, 1)}
             />
           ))}
         </section>
@@ -811,7 +865,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
               : st.projects}
           </h2>
           <hr className="rv-divider" style={divStyle} />
-          {(resume.projects || []).map(proj => (
+          {(resume.projects || []).map((proj, index, items) => (
             <ProjectItem
               key={proj.id}
               proj={proj}
@@ -821,6 +875,10 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
               updItem={updItem}
               removeItem={removeItem}
               onBulletsChange={(bullets) => updBulletsForSection("projects", proj.id, bullets)}
+              canMoveUp={index > 0}
+              canMoveDown={index < items.length - 1}
+              onMoveUp={() => moveItem("projects", proj.id, -1)}
+              onMoveDown={() => moveItem("projects", proj.id, 1)}
             />
           ))}
         </section>

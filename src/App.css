@@ -616,6 +616,15 @@ body {
   transition: background .12s, color .12s, border-color .12s;
 }
 .rv-tb-btn:hover { background: #f5f5f5; border-color: #aaa; color: #111; }
+.rv-tb-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+.rv-tb-btn:disabled:hover {
+  background: #fff;
+  border-color: #d0d0d0;
+  color: #555;
+}
 .rv-tb-del { color: #c53030; border-color: #c53030; background: #fff5f5; padding: 4px 8px; }
 .rv-tb-del:hover { background: #c53030; color: #fff; border-color: #c53030; }
 .rv-tb-add { color: #2d6a4f; border-color: #b5d5c5; }
