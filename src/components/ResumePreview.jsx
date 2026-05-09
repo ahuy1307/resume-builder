@@ -150,6 +150,84 @@ function EditableField({ value, onChange, placeholder, className, style, tag: Ta
   );
 }
 
+/* --- Rich text editable field: persists inline formatting like bold --- */
+function EditableRichField({ value, onChange, placeholder, className, style, tag: Tag = "span", lockCaretStart = false }) {
+  const ref = useRef(null);
+  const focused = useRef(false);
+  const prevValue = useRef(value);
+  const rafRef = useRef(null);
+
+  const findFirstTextNode = useCallback((node) => {
+    if (!node) return null;
+    if (node.nodeType === Node.TEXT_NODE) return node;
+    for (const child of node.childNodes) {
+      const found = findFirstTextNode(child);
+      if (found) return found;
+    }
+    return null;
+  }, []);
+
+  const placeCaretAtStart = useCallback((el) => {
+    if (!el) return;
+    const range = document.createRange();
+    const sel = window.getSelection();
+    const firstText = findFirstTextNode(el);
+    if (firstText) range.setStart(firstText, 0);
+    else range.setStart(el, 0);
+    range.collapse(true);
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }, [findFirstTextNode]);
+
+  const forceCaretAtStart = useCallback((el) => {
+    if (!el) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      placeCaretAtStart(el);
+    });
+  }, [placeCaretAtStart]);
+
+  useEffect(() => () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (ref.current && !focused.current && value !== prevValue.current) {
+      ref.current.innerHTML = value || "";
+      prevValue.current = value;
+    }
+  }, [value]);
+
+  useEffect(() => {
+    if (ref.current) ref.current.innerHTML = value || "";
+  }, []); // eslint-disable-line
+
+  return (
+    <Tag
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      data-placeholder={placeholder}
+      className={`rv-editable${!value ? " rv-editable-empty" : ""}${className ? " " + className : ""}`}
+      style={style}
+      onFocus={(e) => {
+        focused.current = true;
+        if (lockCaretStart) forceCaretAtStart(e.currentTarget);
+      }}
+      onBlur={(e) => {
+        focused.current = false;
+        const html = sanitizeRichBulletHtml(e.target.innerHTML);
+        prevValue.current = html;
+        if (html !== (value || "")) onChange(html);
+      }}
+      onInput={(e) => {
+        if (!e.currentTarget.innerText.trim()) e.currentTarget.innerHTML = "";
+      }}
+      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } }}
+    />
+  );
+}
+
 /* --- BulletEditor: native textarea (stable) -- */
 function BulletEditor({ bullets = [], onChange, editable, placeholder = "Click to add bullet points…" }) {
   const [showToolbar, setShowToolbar] = useState(false);
@@ -951,7 +1029,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
           <div className="rv-skills">
             {skills.map((skill) => (
               <div key={skill.id} className="rv-skill-row">
-                <EditableField
+                <EditableRichField
                   value={skill.value || ""}
                   onChange={(v) => {
                     updItem("skills", skill.id, "value", v);
@@ -1124,7 +1202,7 @@ export default function ResumePreview({ resume, fmt, sectionOrder, hiddenSection
                   <div className="rv-skills">
                     {dataItems.map((item) => (
                       <div key={item.id} className="rv-skill-row">
-                        <EditableField
+                        <EditableRichField
                           value={item.value || ""}
                           onChange={(v) => {
                             updItem(key, item.id, "value", v);
